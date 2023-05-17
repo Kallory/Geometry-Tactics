@@ -8,7 +8,6 @@ using UnityEngine;
 public class Character : MonoBehaviour
 {
     public Rigidbody2D rigidBody;
-
     float horizontal;
     float vertical;
     public float moveSpeed = 20.0f;
@@ -18,7 +17,8 @@ public class Character : MonoBehaviour
     private int dexterity;
     private int speed;
     private int strength;
-    private bool withinDistance = true;
+    private bool withinMovementConstraints = true;
+    public TurnManager turnManager;
     public enum CharacterPhase
     {
         Idle,
@@ -28,27 +28,75 @@ public class Character : MonoBehaviour
 
     public CharacterPhase currentPhase;
     private Vector3 _inputs;
-    public MovementRange movementRange;
+    public MovementRange movementRange; // movement range script
+    EdgeCollider2D ringCollider;
+    GameObject movementRangeObj; // movement range object
+    private Vector3 center;
+    private Vector3 characterPosition;
+    private float diameter;
+    private float CurrentRadius;
+    private float circumference;
+    int numPoints = 100; // Increase this for a more accurate circle
+
 
     void Start()
     {
-        currentPhase = CharacterPhase.Idle;
+        // currentPhase = CharacterPhase.Idle;
+        turnManager = FindAnyObjectByType<TurnManager>();
         // TODO: assign stat values here or ensure that they are properly assigned, maybe pull from JSON file elsewhere for save/load functionality
+        speed = 10;
+        movementRangeObj = GameObject.Find("MovementRangeBlue1");
+        center = movementRangeObj.transform.position;
+        diameter = movementRangeObj.transform.localScale.x;
+        CreateRingCollider();
+    }
+
+    void CreateRingCollider()
+    {
+        Vector2[] edgePoints = new Vector2[numPoints + 1];
+        ringCollider = movementRangeObj.AddComponent<EdgeCollider2D>();
+        for (int loop = 0; loop <= numPoints; loop++)
+        {
+            float angle = (Mathf.PI * 2.0f / numPoints) * loop;
+            edgePoints[loop] = new Vector2(Mathf.Sin(angle), Mathf.Cos(angle)) * diameter;
+        }
+
+        ringCollider.points = edgePoints;
+        CurrentRadius = diameter;
+    }
+
+    public float GetSpeed
+    {
+        get { return speed; }
     }
 
     // Update is called once per frame
     void Update()
-    {
-        // TODO: Calculate distance from center of character's MovementRange to get the 
-        // max distance that the character can move in a turn
-        CheckBoundaries();
-
-        if (withinDistance) {
-            
-        }
-        if (currentPhase == CharacterPhase.Movement)
+    {   
+        Debug.Log("current phase: " + this.name + " " + currentPhase);
+        // make a key that bypasses everything and ends the turn no matter what
+        // TODO: make this key kind of hard to press, maybe two keys so its not an accident
+        if (Input.GetKeyDown(KeyCode.Return))
         {
+            // End the current turn talking to the TurnManager
+            turnManager.SetEndMovementKey(true);
+        }
+
+        
+        if (currentPhase == CharacterPhase.Movement && this.tag == "Player")
+        {
+            // Debug.Log("movementPhase");
             ProcessInput();
+        }
+        else if (currentPhase == CharacterPhase.Fight)
+        {
+            // TODO: Combat logic here
+        }
+
+        if (currentPhase == CharacterPhase.Movement && this.tag == "AI")
+        {
+            Debug.Log("movementPhase for AI");
+            // TODO: AI movement Logic
         }
         else if (currentPhase == CharacterPhase.Fight)
         {
@@ -58,7 +106,13 @@ public class Character : MonoBehaviour
 
     private void CheckBoundaries()
     {
-        
+        // If the character's distance from the center of the circle is less than or equal to
+        // the radius, it can move
+        // radius = 0;
+        // if (radius >= 0)
+        // {
+        //     radius = 1;
+        // }
     }
 
     private void ProcessInput()

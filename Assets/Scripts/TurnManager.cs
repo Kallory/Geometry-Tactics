@@ -8,11 +8,14 @@ public class TurnManager : MonoBehaviour
     // TODO: Calculate initiative properly
     public List<Character> characters = new List<Character>();
     private int currentTurn;
-    private bool endKey;
+    private bool EndMovementKey;
 
     void Start()
     {
         PopulateCharacterList();
+        // initialize current character to movement so that they can move
+        characters[currentTurn].currentPhase = Character.CharacterPhase.Movement;
+        
         for (int i = 0; i < characters.Count; i++)
         {
             Debug.Log("Character = " + characters[i]);
@@ -22,15 +25,16 @@ public class TurnManager : MonoBehaviour
 
     void Update()
     {
-        // initialize current character to movement so that they can move
-        characters[currentTurn].currentPhase = Character.CharacterPhase.Movement;
-
         // If they push a certain key/Button, movementPhase will end
-        if (endKey == true) {
+        if (EndMovementKey == true)
+        {
             characters[currentTurn].currentPhase = Character.CharacterPhase.Fight;
         }
     }
 
+    public void SetEndMovementKey(bool setKey) {
+        EndMovementKey = setKey;
+    }
     void PopulateCharacterList()
     {
         characters.Clear(); // Clear the list before populating
@@ -40,10 +44,13 @@ public class TurnManager : MonoBehaviour
             characters.Add(character);
         }
 
-        if (currentTurn < characters.Count) {
-            
+        if (currentTurn < characters.Count)
+        {
+
             currentTurn++;
-        } else {
+        }
+        else
+        {
             currentTurn = 0;
         }
     }

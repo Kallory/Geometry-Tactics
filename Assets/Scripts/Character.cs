@@ -26,6 +26,7 @@ public class Character : MonoBehaviour
     private float angleStep;
     // TODO: the following 2 should not be serialized fields. 
     [SerializeField] private float attackRange; // this is based on the weapon. Maybe every character could have a different base attackRange, like their arm lengths are different.
+
     // TODO: numAttackMoves is derived from other, more fundamental stats
     [SerializeField] private int numAttackMoves;
     // TODO: Refactor stats into enums or something else? maybe an object of their own?
@@ -140,10 +141,11 @@ public class Character : MonoBehaviour
             ProcessInputAttack();
         }
 
-        if (Input.GetKeyDown(KeyCode.A) && this.tag == "Player" && currentPhase == CharacterPhase.Fight && this.numAttackMoves <= 0)
+        if (Input.GetKeyDown(KeyCode.A) && this.tag == "Player" && currentPhase == CharacterPhase.Fight && this.numAttackMoves <= 0 || ((Input.GetKeyDown(KeyCode.KeypadEnter)) && (Input.GetKeyDown(KeyCode.LeftControl))))
         {
             // end turn
             turnManager.SetEndTurnKey(true);
+            Debug.Log("It is now " + turnManager.GetCharacter() + "'s turn");
         }
 
         if (currentPhase == CharacterPhase.Movement && this.tag == "Player")
@@ -157,6 +159,30 @@ public class Character : MonoBehaviour
         {
             Debug.Log("movementPhase for AI");
             // TODO: AI movement Logic
+            // AI needs to detect the closest enemy and move towards it until it hits a boundary or the enemy. 
+            // If it's near the boundary, end the turn. Else it will attack, move to AI attack phase.
+            Character nearestCharacter = null;
+            float minDistance = Mathf.Infinity; // Start with infinity, so that any distance is smaller
+            Vector2 currentPosition = this.transform.position;
+
+            foreach (Character character in turnManager.playerCharacters)
+            {
+                // Calculate the distance from the AI character to the current player character
+                float distance = Vector2.Distance(currentPosition, character.transform.position);
+
+                // If this distance is smaller than the current minimum, update the minimum
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    nearestCharacter = character;
+                }
+            }
+            Vector2 direction = (nearestCharacter.transform.position - this.transform.position).normalized;
+            this._inputs = Vector2.zero;
+            this._inputs.x = direction.x;
+            this._inputs.y = direction.y;
+            this._inputs = Vector2.ClampMagnitude(this._inputs, 1f);
+
         }
         else if (currentPhase == CharacterPhase.Fight && this.tag == "AI")
         {
@@ -208,36 +234,51 @@ public class Character : MonoBehaviour
         }
     }
 
+    void OnDrawGizmos()
+    {
+        if (Input.GetKeyDown(KeyCode.A) && this.tag == "Player" && currentPhase == CharacterPhase.Fight && this.numAttackMoves > 0)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, attackRange);
+        }
+    }
+
     private void ProcessInputAttack()
     {
         // if (this._inputs != Vector3.zero) // Make sure there is some input
         //{   
-            PolygonCollider2D collider = gameObject.AddComponent<PolygonCollider2D>();
-            Debug.Log("ProcessInputAttackBeingCalled");
-            // coneAngle will be decided by the weapon.
-            float angleStep = coneAngle / numberOfPoints; // coneAngle is the length of the arc in radians. Higher numberOfPoints for smoother arc
-            Vector2[] conePoints = new Vector2[numberOfPoints + 2];
-            conePoints[0] = new Vector2(this.transform.position.x, this.transform.position.y);
-            for (int i = 0; i <= numberOfPoints; i++)
-            {
-                float angle = startingAngle + i * angleStep;
-                Debug.Log("Angle = " + angle);
-                // attack range is essentially the radius, based on the weapon range
-                conePoints[i + 1] = new Vector2(this.transform.position.x + Mathf.Cos(angle) * attackRange, this.transform.position.y + Mathf.Sin(angle) * attackRange);                
-            }
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, attackRange);
+        foreach (var hitCollider in hitColliders)
+        {
+            // Process hit entities
+        }
 
-            collider.SetPath(0, conePoints);
-            collider.offset = new Vector2(6.61f, 2.9f);
-            Vector3 characterPos = new Vector3(this.transform.position.x, this.transform.position.y, 0);
+        // PolygonCollider2D collider = gameObject.AddComponent<PolygonCollider2D>();
+        // Debug.Log("ProcessInputAttackBeingCalled");
+        // // coneAngle will be decided by the weapon.
+        // float angleStep = coneAngle / numberOfPoints; // coneAngle is the length of the arc in radians. Higher numberOfPoints for smoother arc
+        // Vector2[] conePoints = new Vector2[numberOfPoints + 2];
+        // conePoints[0] = new Vector2(this.transform.position.x, this.transform.position.y);
+        // for (int i = 0; i <= numberOfPoints; i++)
+        // {
+        //     float angle = startingAngle + i * angleStep;
+        //     Debug.Log("Angle = " + angle);
+        //     // attack range is essentially the radius, based on the weapon range
+        //     conePoints[i + 1] = new Vector2(this.transform.position.x + Mathf.Cos(angle) * attackRange, this.transform.position.y + Mathf.Sin(angle) * attackRange);
+        // }
 
-            for (int i = 0; i < conePoints.Length - 1; i++)
-            {
-                Debug.DrawLine(characterPos + new Vector3(conePoints[i].x, conePoints[i].y, 0), characterPos + new Vector3(conePoints[i + 1].x, conePoints[i + 1].y, 0), Color.red, 10.0f);
+        // collider.SetPath(0, conePoints);
+        // collider.offset = new Vector2(6.61f, 2.9f);
+        // Vector3 characterPos = new Vector3(this.transform.position.x, this.transform.position.y, 0);
 
-            }
-            Debug.DrawLine(characterPos + new Vector3(conePoints[conePoints.Length - 1].x, conePoints[conePoints.Length - 1].y, 0), characterPos + new Vector3(conePoints[0].x, conePoints[0].y, 0), Color.red, 2.0f);
+        // for (int i = 0; i < conePoints.Length - 1; i++)
+        // {
+        //     Debug.DrawLine(characterPos + new Vector3(conePoints[i].x, conePoints[i].y, 0), characterPos + new Vector3(conePoints[i + 1].x, conePoints[i + 1].y, 0), Color.red, 10.0f);
 
-       // }
+        // }
+        // Debug.DrawLine(characterPos + new Vector3(conePoints[conePoints.Length - 1].x, conePoints[conePoints.Length - 1].y, 0), characterPos + new Vector3(conePoints[0].x, conePoints[0].y, 0), Color.red, 2.0f);
+
+        // }
     }
 
     private void FixedUpdate()
@@ -248,7 +289,19 @@ public class Character : MonoBehaviour
             //rigidBody.AddForce(this._inputs * Time.deltaTime * moveSpeed);
             rigidBody.velocity = new Vector2(this._inputs.x * moveSpeed, this._inputs.y * moveSpeed) * Time.deltaTime;
         }
-        else if (currentPhase == CharacterPhase.Fight)
+        else if (currentPhase == CharacterPhase.Fight && this.tag == "Player")
+        {
+            rigidBody.velocity = new Vector2(0, 0);
+            // TODO: Combat logic here
+        }
+
+        if (currentPhase == CharacterPhase.Movement && this.tag == "AI")
+        {
+            //body.velocity = new Vector2(horizontal * runSpeed, vertical * runSpeed);
+            //rigidBody.AddForce(this._inputs * Time.deltaTime * moveSpeed);
+            rigidBody.velocity = new Vector2(this._inputs.x * moveSpeed, this._inputs.y * moveSpeed) * Time.deltaTime;
+        }
+        else if (currentPhase == CharacterPhase.Fight && this.tag == "AI")
         {
             rigidBody.velocity = new Vector2(0, 0);
             // TODO: Combat logic here

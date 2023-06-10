@@ -1072,8 +1072,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rigidBody: {fileID: 1384664954}
   moveSpeed: 20
-  attackRange: 0
-  numAttackMoves: 0
+  attackRange: 10
+  numAttackMoves: 1
   turnManager: {fileID: 0}
   currentPhase: 0
   movementRange: {fileID: 661356813}

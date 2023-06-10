@@ -7,6 +7,7 @@ public class TurnManager : MonoBehaviour
     // This script handles the turn order. Will calculate initiate based on several factors.
     // TODO: Calculate initiative properly
     public List<Character> characters = new List<Character>();
+    public List<Character> playerCharacters = new List<Character>();
     private int currentTurn;
     private bool EndMovementKey;
     private bool EndTurnKey;
@@ -68,7 +69,7 @@ public class TurnManager : MonoBehaviour
 
     public void SetEndTurnKey(bool setKey)
     {
-
+        EndTurnKey = setKey;
     }
 
     public Character.CharacterPhase getCurrentPhase()
@@ -87,6 +88,10 @@ public class TurnManager : MonoBehaviour
         foreach (Character character in foundCharacters)
         {
             characters.Add(character);
+            if (character.tag == "Player")
+            {
+                playerCharacters.Add(character);
+            }
         }
 
     }

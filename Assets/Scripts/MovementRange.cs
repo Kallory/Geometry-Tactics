@@ -11,7 +11,8 @@ public class MovementRange : MonoBehaviour
     void Start()
     {
         // character = character.GetComponent<Character>();
-        // TODO: put in update, have it disappaer when turn = false. Somehow associate it with a single game object. Add bounds (maybe just making it a collider will work in this instance?)
+        // TODO: put in update, have it disappear when turn = false. Somehow associate it with a single game object. Add bounds (maybe just making it a collider will work in this instance?)
+        // TODO: Also, the width of the line of the ring needs to stay the same as it scales up, or maybe not? Test both ways. 
         ScaleMovementRing();
     }
 

@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - AI
+  - Square
   layers:
   - Default
   - TransparentFX

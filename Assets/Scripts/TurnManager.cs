@@ -9,18 +9,23 @@ public class TurnManager : MonoBehaviour
     public List<Character> characters = new List<Character>();
     private int currentTurn;
     private bool EndMovementKey;
+    private bool EndTurnKey;
+    private bool EndIdlePhaseKey;
 
     void Start()
     {
+        EndMovementKey = false;
+        EndTurnKey = false;
+        currentTurn = 0;
         PopulateCharacterList();
         // initialize current character to movement so that they can move
         characters[currentTurn].currentPhase = Character.CharacterPhase.Movement;
-        
+
         for (int i = 0; i < characters.Count; i++)
         {
             Debug.Log("Character = " + characters[i]);
         }
-        currentTurn = 0;
+
     }
 
     void Update()
@@ -29,11 +34,51 @@ public class TurnManager : MonoBehaviour
         if (EndMovementKey == true)
         {
             characters[currentTurn].currentPhase = Character.CharacterPhase.Fight;
+            EndIdlePhaseKey = false;
+            EndMovementKey = false;
+            EndTurnKey = false;
+        }
+
+        if (EndTurnKey == true)
+        {
+            characters[currentTurn].currentPhase = Character.CharacterPhase.Idle;
+
+
+            if (currentTurn < characters.Count)
+            {
+                currentTurn++;
+            }
+            else
+            {
+                currentTurn = 0;
+            }
+
+            characters[currentTurn].currentPhase = Character.CharacterPhase.Movement;
+
+            EndIdlePhaseKey = false;
+            EndMovementKey = false;
+            EndTurnKey = false;
         }
     }
 
-    public void SetEndMovementKey(bool setKey) {
+    public void SetEndMovementKey(bool setKey)
+    {
         EndMovementKey = setKey;
+    }
+
+    public void SetEndTurnKey(bool setKey)
+    {
+
+    }
+
+    public Character.CharacterPhase getCurrentPhase()
+    {
+        return characters[currentTurn].currentPhase;
+    }
+
+    public Character GetCharacter()
+    {
+        return characters[currentTurn];
     }
     void PopulateCharacterList()
     {
@@ -44,15 +89,6 @@ public class TurnManager : MonoBehaviour
             characters.Add(character);
         }
 
-        if (currentTurn < characters.Count)
-        {
-
-            currentTurn++;
-        }
-        else
-        {
-            currentTurn = 0;
-        }
     }
 
 

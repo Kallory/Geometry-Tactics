@@ -7,7 +7,9 @@ public class CursorController : MonoBehaviour
     public LayerMask selectableLayer; // Layer for selectable objects
     public Texture2D cursor;
     private string objectInfo;
-    public TMP_Text infoText;
+    public TMP_Text hoverInfoText;
+    public TMP_Text turnInfoText;
+    TurnManager turnManager;
 
     private void Awake()
     {
@@ -16,6 +18,7 @@ public class CursorController : MonoBehaviour
     }
     void Start()
     {
+        turnManager = FindAnyObjectByType<TurnManager>();
         mainCamera = Camera.main;
         objectInfo = "Object: " + gameObject.name;
     }
@@ -34,16 +37,28 @@ public class CursorController : MonoBehaviour
             if (hoverInfo != null)
             {
                 // Get the object's information and display it in the UI Text component
-                infoText.text = hoverInfo.objectInfo;
-                Debug.Log("Selected object: " + infoText.text);
+                hoverInfoText.text = hoverInfo.objectInfo;
+                Debug.Log("Selected object: " + hoverInfoText.text);
             }
         }
         else
         {
             // Clear the UI Text when not hovering over an object
-            infoText.text = "";
+            hoverInfoText.text = "";
         }
 
+        if (turnManager.getCurrentPhase() == Character.CharacterPhase.Movement && turnManager.GetCharacter().tag == "Player")
+        {
+            turnInfoText.text = "Press enter to end move phase or ctrl+enter to end turn";
+        }
+        else if (turnManager.getCurrentPhase() == Character.CharacterPhase.Fight && turnManager.GetCharacter().tag == "Player")
+        {
+            turnInfoText.text = "Attack an enemy with A or press enter to end turn";
+        }
+        else if (turnManager.getCurrentPhase() == Character.CharacterPhase.Idle && turnManager.GetCharacter().tag == "Player")
+        {
+            turnInfoText.text = "Enemy turn";
+        }
         // // Check for mouse click
         // if (Input.GetMouseButtonDown(0))
         // {

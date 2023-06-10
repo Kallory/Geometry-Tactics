@@ -18,6 +18,8 @@ public class MovementRange : MonoBehaviour
     // Update the size of the movement ring based on the character's movement range
     private void ScaleMovementRing()
     {   
+        // TODO: Replace movementRange with a stat from the Character
+        // TODO: MovementRange sprite needs to be based on the stat, can't expand dynamically in Unity
         float scaleFactor = movementRange / (movementRing.transform.localScale.x / 2f);
         movementRing.transform.localScale = new Vector3(scaleFactor, scaleFactor, 1);
     }

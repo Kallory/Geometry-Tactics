@@ -8,6 +8,7 @@ using UnityEngine;
 public class Character : MonoBehaviour
 {
     public Rigidbody2D rigidBody;
+    SpriteRenderer sr;
     float horizontal;
     float vertical;
     public float moveSpeed = 20.0f;
@@ -62,6 +63,10 @@ public class Character : MonoBehaviour
     private Vector2[] conePoints;
     private float startingAngle;
 
+    // these are variables for the AI to find the nearest character and move towards it
+    Character nearestCharacter;
+    float minDistance;
+
     void Start()
     {
         turnManager = FindAnyObjectByType<TurnManager>();
@@ -77,20 +82,28 @@ public class Character : MonoBehaviour
         conePoints = new Vector2[numberOfPoints];
         coneAngle = 90 * Mathf.Deg2Rad;
 
+        if (this.tag == "AI")
+        {
+            nearestCharacter = null;
+            minDistance = Mathf.Infinity; // Start with infinity, so that any distance is smaller
+        }
+
+        Debug.Log("Ring collider in start: " + ringCollider);
+        sr = movementRange.GetComponent<SpriteRenderer>();
     }
 
     void Awake()
     {
         center = movementRangeObj.transform.position;
         diameter = movementRangeObj.transform.localScale.x;
-        ringCollider = null;
+        // ringCollider = null;
+        ringCollider = movementRangeObj.AddComponent<EdgeCollider2D>();
         CreateRingCollider(center, diameter, movementRangeObj, ringCollider);
     }
 
     void CreateRingCollider(Vector2 center, float diameter, GameObject movementRange, EdgeCollider2D ringCollider)
     {
         Vector2[] edgePoints = new Vector2[numTotalCirclePoints + 1];
-        ringCollider = movementRange.AddComponent<EdgeCollider2D>();
         for (int i = 0; i <= numTotalCirclePoints; i++)
         {
             float angle = (Mathf.PI * 2.0f / numTotalCirclePoints) * i;
@@ -98,7 +111,8 @@ public class Character : MonoBehaviour
         }
 
         ringCollider.points = edgePoints;
-        Debug.Log("ring collider - " + ringCollider.name);
+        //Debug.Log("Ring collider: " + ringCollider);
+        // ringCollider.isTrigger = true;
         CurrentRadius = diameter;
     }
 
@@ -109,6 +123,17 @@ public class Character : MonoBehaviour
 
     void Update()
     {
+
+        if (currentPhase == CharacterPhase.Idle)
+        {
+            ringCollider.enabled = false;
+            sr.enabled = false;
+        }
+        else
+        {
+            ringCollider.enabled = true;
+            sr.enabled = true;
+        }
         // Debug.Log("current phase: " + this.name + " " + currentPhase);
         // TODO: make a key that bypasses everything and ends the turn no matter what
         // TODO: make this key kind of hard to press, maybe two keys so its not an accident
@@ -164,11 +189,9 @@ public class Character : MonoBehaviour
         if (currentPhase == CharacterPhase.Movement && this.tag == "AI")
         {
             Debug.Log("movementPhase for AI");
-            // TODO: AI movement Logic
+            // TODO: improve AI movement Logic ie: deal with obstacles
             // AI needs to detect the closest enemy and move towards it until it hits a boundary or the enemy. 
             // If it's near the boundary, end the turn. Else it will attack, move to AI attack phase.
-            Character nearestCharacter = null;
-            float minDistance = Mathf.Infinity; // Start with infinity, so that any distance is smaller
             Vector2 currentPosition = this.transform.position;
 
             foreach (Character character in turnManager.playerCharacters)
@@ -189,11 +212,35 @@ public class Character : MonoBehaviour
             this._inputs.y = direction.y;
             this._inputs = Vector2.ClampMagnitude(this._inputs, 1f);
 
+            // check if AI has made contact with collider or if the nearestCharacter is within distance (minDistance has the distance of the nearest character)
+            if (nearestCharacter != null && minDistance < this.attackRange)
+            {
+
+            }
+
         }
         else if (currentPhase == CharacterPhase.Fight && this.tag == "AI")
         {
             Debug.Log("combatPhase for AI");
             // TODO: AI Combat logic here
+            // if an enemy is within range, can use attackRange and the previous nearestCharacter variable for now
+            if (nearestCharacter != null && minDistance < this.attackRange)
+            {
+                // ai attacks
+            }
+            else
+            {
+                // end turn
+            }
+
+        }
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject == this.gameObject)
+        {
+            Debug.Log("AI has hit its own EdgeCollider2D");
         }
     }
 

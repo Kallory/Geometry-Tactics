@@ -49,11 +49,18 @@ public class Character : MonoBehaviour
     public CharacterPhase currentPhase;
     private Vector3 _inputs;
     public MovementRange movementRange; // movement range script
-    EdgeCollider2D ringCollider;
-    GameObject movementRangeObj; // movement range object
-    private Vector3 center;
-    private Vector3 characterPosition;
-    private float diameter;
+    EdgeCollider2D ringColliderBlue1;
+    EdgeCollider2D ringColliderRed1;
+
+    GameObject movementRangeObjBlue1; // movement range object
+    GameObject movementRangeObjRed1; // movement range object
+    private Vector2 centerBlue1;
+    private Vector2 centerRed1;
+
+    private Vector2 characterPosition;
+    private float diameterBlue1;
+    private float diameterRed1;
+
     private float CurrentRadius;
     private float circumference;
     int numTotalCirclePoints = 100; // Increase this for a more accurate circle
@@ -75,16 +82,27 @@ public class Character : MonoBehaviour
         speed = 10;
         conePoints = new Vector2[numberOfPoints];
         coneAngle = 90 * Mathf.Deg2Rad;
-        movementRangeObj = GameObject.Find("MovementRangeBlue1");
-        center = movementRangeObj.transform.position;
-        diameter = movementRangeObj.transform.localScale.x;
-        CreateRingCollider();
+
     }
 
-    void CreateRingCollider()
+    void Awake()
+    {
+        movementRangeObjBlue1 = GameObject.Find("MovementRangeBlue1");
+        centerBlue1 = movementRangeObjBlue1.transform.position;
+        diameterBlue1 = movementRangeObjBlue1.transform.localScale.x;
+        CreateRingCollider(centerBlue1, diameterBlue1, movementRangeObjBlue1, ringColliderBlue1);
+        movementRangeObjRed1 = GameObject.Find("MovementRangeRed1");
+        centerRed1 = movementRangeObjRed1.transform.position;
+        Debug.Log("CenterRed1 = " + centerRed1 + " CenterBlue1 = " + centerBlue1);
+        diameterRed1 = movementRangeObjRed1.transform.localScale.x;
+        Debug.Log("diameterRed1 = " + diameterRed1 + " diameterBlue1 = " + diameterBlue1);
+        CreateRingCollider(centerRed1, diameterRed1, movementRangeObjRed1, ringColliderRed1);
+    }
+
+    void CreateRingCollider(Vector2 center, float diameter, GameObject movementRange, EdgeCollider2D ringCollider)
     {
         Vector2[] edgePoints = new Vector2[numTotalCirclePoints + 1];
-        ringCollider = movementRangeObj.AddComponent<EdgeCollider2D>();
+        ringCollider = movementRange.AddComponent<EdgeCollider2D>();
         for (int loop = 0; loop <= numTotalCirclePoints; loop++)
         {
             float angle = (Mathf.PI * 2.0f / numTotalCirclePoints) * loop;
@@ -295,6 +313,7 @@ public class Character : MonoBehaviour
             // TODO: Combat logic here
         }
 
+        // AI stuff
         if (currentPhase == CharacterPhase.Movement && this.tag == "AI")
         {
             //body.velocity = new Vector2(horizontal * runSpeed, vertical * runSpeed);

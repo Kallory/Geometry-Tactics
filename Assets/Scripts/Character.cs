@@ -49,18 +49,12 @@ public class Character : MonoBehaviour
     public CharacterPhase currentPhase;
     private Vector3 _inputs;
     public MovementRange movementRange; // movement range script
-    EdgeCollider2D ringColliderBlue1;
-    EdgeCollider2D ringColliderRed1;
-
-    GameObject movementRangeObjBlue1; // movement range object
-    GameObject movementRangeObjRed1; // movement range object
-    private Vector2 centerBlue1;
-    private Vector2 centerRed1;
+    private EdgeCollider2D ringCollider;
+    public GameObject movementRangeObj;
+    private Vector2 center;
+    private float diameter;
 
     private Vector2 characterPosition;
-    private float diameterBlue1;
-    private float diameterRed1;
-
     private float CurrentRadius;
     private float circumference;
     int numTotalCirclePoints = 100; // Increase this for a more accurate circle
@@ -87,29 +81,24 @@ public class Character : MonoBehaviour
 
     void Awake()
     {
-        movementRangeObjBlue1 = GameObject.Find("MovementRangeBlue1");
-        centerBlue1 = movementRangeObjBlue1.transform.position;
-        diameterBlue1 = movementRangeObjBlue1.transform.localScale.x;
-        CreateRingCollider(centerBlue1, diameterBlue1, movementRangeObjBlue1, ringColliderBlue1);
-        movementRangeObjRed1 = GameObject.Find("MovementRangeRed1");
-        centerRed1 = movementRangeObjRed1.transform.position;
-        Debug.Log("CenterRed1 = " + centerRed1 + " CenterBlue1 = " + centerBlue1);
-        diameterRed1 = movementRangeObjRed1.transform.localScale.x;
-        Debug.Log("diameterRed1 = " + diameterRed1 + " diameterBlue1 = " + diameterBlue1);
-        CreateRingCollider(centerRed1, diameterRed1, movementRangeObjRed1, ringColliderRed1);
+        center = movementRangeObj.transform.position;
+        diameter = movementRangeObj.transform.localScale.x;
+        ringCollider = null;
+        CreateRingCollider(center, diameter, movementRangeObj, ringCollider);
     }
 
     void CreateRingCollider(Vector2 center, float diameter, GameObject movementRange, EdgeCollider2D ringCollider)
     {
         Vector2[] edgePoints = new Vector2[numTotalCirclePoints + 1];
         ringCollider = movementRange.AddComponent<EdgeCollider2D>();
-        for (int loop = 0; loop <= numTotalCirclePoints; loop++)
+        for (int i = 0; i <= numTotalCirclePoints; i++)
         {
-            float angle = (Mathf.PI * 2.0f / numTotalCirclePoints) * loop;
-            edgePoints[loop] = new Vector2(Mathf.Sin(angle), Mathf.Cos(angle)) * diameter;
+            float angle = (Mathf.PI * 2.0f / numTotalCirclePoints) * i;
+            edgePoints[i] = new Vector2(Mathf.Sin(angle), Mathf.Cos(angle)) * diameter;
         }
 
         ringCollider.points = edgePoints;
+        Debug.Log("ring collider - " + ringCollider.name);
         CurrentRadius = diameter;
     }
 
@@ -118,7 +107,6 @@ public class Character : MonoBehaviour
         get { return speed; }
     }
 
-    // Update is called once per frame
     void Update()
     {
         // Debug.Log("current phase: " + this.name + " " + currentPhase);

@@ -815,6 +815,7 @@ MonoBehaviour:
   turnManager: {fileID: 0}
   currentPhase: 1
   movementRange: {fileID: 1396608711}
+  movementRangeObj: {fileID: 1396608708}
 --- !u!1 &1112918383
 GameObject:
   m_ObjectHideFlags: 0
@@ -1100,6 +1101,7 @@ MonoBehaviour:
   turnManager: {fileID: 0}
   currentPhase: 0
   movementRange: {fileID: 661356813}
+  movementRangeObj: {fileID: 661356810}
 --- !u!1 &1396608708
 GameObject:
   m_ObjectHideFlags: 0
